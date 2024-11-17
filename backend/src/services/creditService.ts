@@ -2,6 +2,7 @@ import { sendEmail } from './emailService';
 import { fetchReferenceRate } from './nbpService';
 import CreditCalculation from '../models/CreditCalculation';
 import { roundToTwo } from '../utils/roundToTwo';
+import { calculatePMT } from '../utils/calculatePMT';
 import { CreditParams } from '../types/CreditParams';
 
 export const creditCalculationService = async (params: CreditParams) => {
@@ -21,10 +22,12 @@ export const creditCalculationService = async (params: CreditParams) => {
     };
   }
 
-  const remainingContractValue = remainingInstallments * installmentAmount;
+  const installmentsPaid = totalInstallments - remainingInstallments;
+  const remainingContractValue =
+    financingAmount - installmentsPaid * installmentAmount;
 
   const newInstallmentAmount = roundToTwo(
-    (remainingContractValue * (1 + referenceRate / 100)) / remainingInstallments
+    calculatePMT(remainingContractValue, referenceRate, remainingInstallments)
   );
 
   await CreditCalculation.create({
