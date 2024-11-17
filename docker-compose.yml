@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      PORT: 3000
+      DB_NAME: "creditmate_db"
+      DB_USER: "creditmate_user"
+      DB_PASSWORD: "creditmate_password"
+      DB_HOST: "db"
+      SMTP_USER: "your_smtp_user"
+      SMTP_PASSWORD: "your_smtp_password"
+      SMTP_HOST: "smtp.example.com"
+      SMTP_PORT: 465
+      EMAIL_RECIPIENT: "recipient@example.com"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: "http://localhost:3001"
+    ports:
+      - "3000:3000"
+
+  db:
+    image: mariadb:latest
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: "creditmate_db"
+      MYSQL_USER: "creditmate_user"
+      MYSQL_PASSWORD: "creditmate_password"
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
